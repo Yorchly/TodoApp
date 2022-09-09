@@ -2,13 +2,13 @@ version: "3.7"
 
 services:
   todo-vue-app:
-    image: todo-vue-app
+    image: vue-todo-app
     build: ./TodoAppVue/todo-app
     ports:
       - 8080:8080
   
   todo-net-app:
-    image: todo-net-app
+    image: net-todo-app
     build: ./TodoAppNet
     ports:
       - 5000:5000
@@ -17,3 +17,16 @@ services:
        MYSQL_USER: root
        MYSQL_PASSWORD: secret
        MYSQL_DB: todos
+
+  mysql:
+    image: mysql:latest
+    volumes:
+      - todo-mysql-data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: todos
+    ports:
+      - 3306:3306
+
+volumes:
+  todo-mysql-data:
