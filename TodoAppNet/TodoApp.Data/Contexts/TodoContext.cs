@@ -15,8 +15,7 @@ namespace TodoApp.Data.Contexts
 
         public void Migrate()
         {
-            if (base.Database.GetPendingMigrations().Any())
-                base.Database.Migrate();
+           base.Database.Migrate();
         }
 
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken) =>
