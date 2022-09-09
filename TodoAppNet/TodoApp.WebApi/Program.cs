@@ -1,7 +1,6 @@
 using TodoApp.Application;
 using TodoApp.Application.Common.Interfaces;
 using TodoApp.Data;
-using TodoApp.WebApi.Utils;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,10 +21,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDataProjectDependencies(
-    EnvironmentUtils
-    .GetEnvironment(
-        Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")
-    )
+    builder.Configuration.GetConnectionString("DefaultConnection")
 );
 builder.Services.AddApplicationProjectDependencies();
 
