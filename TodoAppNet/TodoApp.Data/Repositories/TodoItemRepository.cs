@@ -39,7 +39,7 @@ namespace TodoApp.Data.Repositories
 
         public async Task Delete(long id, CancellationToken cancellationToken)
         {
-            TodoItem todoItem = await _context.TodoItems.FindAsync(id);
+            TodoItem todoItem = await Get(id, cancellationToken);
 
             if (todoItem == null)
                 throw new NotFoundException($"TodoItem with Id '{id}' could not be found");
