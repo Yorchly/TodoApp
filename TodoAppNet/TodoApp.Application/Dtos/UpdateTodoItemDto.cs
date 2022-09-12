@@ -2,10 +2,10 @@
 
 namespace TodoApp.Application.Dtos
 {
-    public class TodoItemDto
+    public class UpdateTodoItemDto
     {
-        public long Id { get; set; }
         public string Content { get; set; }
+        [Required]
         public bool Done { get; set; }
     }
 }

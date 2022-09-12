@@ -40,21 +40,14 @@ namespace TodoApp.WebApi.Controllers
             
 
         [HttpPost]
-        public async Task<ActionResult<long>> Post([FromBody] TodoItemDto todoItemDto)
+        public async Task<ActionResult<long>> Post([FromBody] CreateTodoItemDto todoItemDto)
         {
-            ValidationResult validationResult = await _todoItemDtoValidator.ValidateAsync(todoItemDto);
-
-            if (validationResult.Errors.Count > 0)
-                return BadRequest(
-                    validationResult.Errors.Select(error => error.ErrorMessage)
-                );
-
             try
             {
                 long result = await _mediator.Send(
                     new CreateTodoItemCommand
                     {
-                        TodoItemDto = todoItemDto
+                        CreateTodoItemDto = todoItemDto
                     }
                 );
                 return Ok(result);
@@ -65,24 +58,21 @@ namespace TodoApp.WebApi.Controllers
             }  
         }
 
-        [HttpPut]
-        public async Task<ActionResult<Unit>> Put([FromBody] TodoItemDto todoItemDto)
+        [HttpPut("{id:long}")]
+        public async Task<ActionResult<Unit>> Put([FromBody] UpdateTodoItemDto todoItemDto, long id)
         {
-            var validationResult = await _todoItemDtoValidator.ValidateAsync(
-                todoItemDto,
-                options => options.IncludeProperties(nameof(todoItemDto.Content), nameof(todoItemDto))
-            );
-
-            if (validationResult.Errors.Count > 0)
-                return BadRequest(
-                    validationResult.Errors.Select(error => error.ErrorMessage)
-                );
-            if (todoItemDto.Id <= 0)
-                return BadRequest("TodoItemDto Id must have a value greater than 0");
+            if (id <= 0)
+                return BadRequest("TodoItemDto Id must have a value greater than 0.");
 
             try
             {
-                await _mediator.Send(new UpdateTodoItemCommand { TodoItemDto = todoItemDto });
+                await _mediator.Send(
+                    new UpdateTodoItemCommand 
+                    { 
+                        UpdateTodoItemDto = todoItemDto, 
+                        Id = id 
+                    }
+                );
 
                 return Ok();
             }
@@ -96,7 +86,7 @@ namespace TodoApp.WebApi.Controllers
             }
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:long}")]
         public async Task<ActionResult<Unit>> Delete(long id)
         {
             if (id <= 0)

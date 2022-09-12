@@ -10,6 +10,8 @@ namespace TodoApp.Application.Common.Automapper
         {
             CreateMap<TodoItem, TodoItemDto>();
             CreateMap<TodoItemDto, TodoItem>();
+            CreateMap<UpdateTodoItemDto, TodoItem>();
+            CreateMap<CreateTodoItemDto, TodoItem>();
         }
     }
 }

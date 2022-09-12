@@ -83,9 +83,8 @@ namespace Presentation.UnitTests
         [Test]
         public async Task Post_TodoItemIsCreatedSuccesfully_ReturnsNewTodoItemCreatedId()
         {
-            var todoItemDto = new TodoItemDto
+            var createTodoItemDto = new CreateTodoItemDto
             {
-                Id = 0,
                 Content = "Test",
                 Done = true
             };
@@ -94,7 +93,7 @@ namespace Presentation.UnitTests
                 .Setup(mediator => mediator.Send(It.IsAny<CreateTodoItemCommand>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(createdTodoItemId);
 
-            ActionResult<long> result = await controller.Post(todoItemDto);
+            ActionResult<long> result = await controller.Post(createTodoItemDto);
 
             var okObjectResult = result.Result as OkObjectResult;
             OkObjectResultAsserts(okObjectResult);
@@ -105,42 +104,10 @@ namespace Presentation.UnitTests
         }
 
         [Test]
-        public async Task Post_ValidationErrorIdSpecifiedIsGreaterThan0_ReturnsBadRequest()
-        {
-            var todoItemDto = new TodoItemDto
-            {
-                Id = 1,
-                Content = "Test",
-                Done = true
-            };
-
-            ActionResult<long> result = await controller.Post(todoItemDto);
-
-            var badRequestObjectResult = result.Result as BadRequestObjectResult;
-            BadRequestObjectResultAsserts(badRequestObjectResult);
-        }
-
-        [Test]
-        public async Task Post_ValidationErrorContentSpecifiedIsEmptyOrNull_ReturnsBadRequest()
-        {
-            var todoItemDto = new TodoItemDto
-            {
-                Id = 0,
-                Done = true
-            };
-
-            ActionResult<long> result = await controller.Post(todoItemDto);
-
-            var badRequestObjectResult = result.Result as BadRequestObjectResult;
-            BadRequestObjectResultAsserts(badRequestObjectResult);
-        }
-
-        [Test]
         public async Task Post_MediatorThrowsAnException_ReturnsObjectResultWithStatus500()
         {
-            var todoItemDto = new TodoItemDto
+            var createTodoItemDto = new CreateTodoItemDto
             {
-                Id = 0,
                 Content = "Test",
                 Done = true
             };
@@ -148,7 +115,7 @@ namespace Presentation.UnitTests
                 .Setup(mediator => mediator.Send(It.IsAny<CreateTodoItemCommand>(), It.IsAny<CancellationToken>()))
                 .Throws(() => new Exception());
 
-            ActionResult<long> result = await controller.Post(todoItemDto);
+            ActionResult<long> result = await controller.Post(createTodoItemDto);
 
             var objectResult = result.Result as ObjectResult;
             ObjectResultWithStatus500Asserts(objectResult);
@@ -161,52 +128,35 @@ namespace Presentation.UnitTests
         [Test]
         public async Task Put_TodoItemIsUpdatedSuccesfully_ReturnsOkResult()
         {
-            var todoItemDto = new TodoItemDto
+            var todoItemDto = new UpdateTodoItemDto
             {
-                Id = 1,
                 Content = "Updated todo test action",
                 Done = true
             };
             var updateTodoItemCommand = new UpdateTodoItemCommand
             {
-                TodoItemDto = todoItemDto
+                UpdateTodoItemDto = todoItemDto
             };
             mediatorMock
                 .Setup(mediator => mediator.Send(It.IsAny<UpdateTodoItemCommand>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(Unit.Value);
 
-            ActionResult<Unit> result = await controller.Put(todoItemDto);
+            ActionResult<Unit> result = await controller.Put(todoItemDto, 1);
 
             var okResult = result.Result as OkResult;
             OkResultAsserts(okResult);
         }
 
         [Test]
-        public async Task Put_ValidationErrorContentIsEmptyOrNull_ReturnsBadRequest()
-        {
-            var todoItemDto = new TodoItemDto
-            {
-                Id = 1,
-                Done = true
-            };
-
-            ActionResult<Unit> result = await controller.Put(todoItemDto);
-
-            var badRequestObjectResult = result.Result as BadRequestObjectResult;
-            BadRequestObjectResultAsserts(badRequestObjectResult);
-        }
-
-        [Test]
         public async Task Put_ValidationErrorIdIsMinorOrEqualToZero_ReturnsBadRequest()
         {
-            var todoItemDto = new TodoItemDto
+            var todoItemDto = new UpdateTodoItemDto
             {
-                Id = 0,
                 Content = "Test",
                 Done = true
             };
 
-            ActionResult<Unit> result = await controller.Put(todoItemDto);
+            ActionResult<Unit> result = await controller.Put(todoItemDto, 0);
 
             var badRequestObjectResult = result.Result as BadRequestObjectResult;
             BadRequestObjectResultAsserts(badRequestObjectResult);
@@ -215,21 +165,20 @@ namespace Presentation.UnitTests
         [Test]
         public async Task Put_TodoItemIsNotFound_ReturnsNotFoundObjectResult()
         {
-            var todoItemDto = new TodoItemDto
+            var todoItemDto = new UpdateTodoItemDto
             {
-                Id = 1,
                 Content = "Updated todo test action",
                 Done = true
             };
             var updateTodoItemCommand = new UpdateTodoItemCommand
             {
-                TodoItemDto = todoItemDto
+                UpdateTodoItemDto = todoItemDto
             };
             mediatorMock
                 .Setup(mediator => mediator.Send(It.IsAny<UpdateTodoItemCommand>(), It.IsAny<CancellationToken>()))
                 .Throws(() => new NotFoundException());
 
-            ActionResult<Unit> result = await controller.Put(todoItemDto);
+            ActionResult<Unit> result = await controller.Put(todoItemDto, 1);
 
             var notFoundObjectResult = result.Result as NotFoundObjectResult;
             NotFoundObjectResultAsserts(notFoundObjectResult);
@@ -238,21 +187,20 @@ namespace Presentation.UnitTests
         [Test]
         public async Task Put_MediatorThrowsAnException_ReturnsObjectResultWithStatus500()
         {
-            var todoItemDto = new TodoItemDto
+            var todoItemDto = new UpdateTodoItemDto
             {
-                Id = 1,
                 Content = "Updated todo test action",
                 Done = true
             };
             var updateTodoItemCommand = new UpdateTodoItemCommand
             {
-                TodoItemDto = todoItemDto
+                UpdateTodoItemDto = todoItemDto
             };
             mediatorMock
                 .Setup(mediator => mediator.Send(It.IsAny<UpdateTodoItemCommand>(), It.IsAny<CancellationToken>()))
                 .Throws(() => new Exception());
 
-            ActionResult<Unit> result = await controller.Put(todoItemDto);
+            ActionResult<Unit> result = await controller.Put(todoItemDto, 1);
 
             var objectResult = result.Result as ObjectResult;
             ObjectResultWithStatus500Asserts(objectResult);

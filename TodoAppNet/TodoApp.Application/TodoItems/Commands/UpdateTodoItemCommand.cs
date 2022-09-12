@@ -10,7 +10,8 @@ namespace TodoApp.Application.TodoItems.Commands
 {
     public class UpdateTodoItemCommand : IRequest
     {
-        public TodoItemDto TodoItemDto { get; set; }
+        public UpdateTodoItemDto UpdateTodoItemDto { get; set; }
+        public long Id { get; set; }
     }
 
     public class UpdateTodoItemCommandHandler : IRequestHandler<UpdateTodoItemCommand>
@@ -26,9 +27,14 @@ namespace TodoApp.Application.TodoItems.Commands
 
         public async Task<Unit> Handle(UpdateTodoItemCommand request, CancellationToken cancellationToken)
         {
-            TodoItem todoItem = _mapper.Map<TodoItem>(request.TodoItemDto);
+            TodoItem todoItem = await _repository.Get(request.Id, cancellationToken);
 
-            await _repository.Update(todoItem, cancellationToken);
+            if (todoItem == null)
+                return Unit.Value;
+
+            _mapper.Map(request.UpdateTodoItemDto, todoItem);
+
+            await _repository.SaveChangesAsync(cancellationToken);
 
             return Unit.Value;
         }

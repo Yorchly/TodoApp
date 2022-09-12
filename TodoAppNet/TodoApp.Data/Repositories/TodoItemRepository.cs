@@ -62,33 +62,43 @@ namespace TodoApp.Data.Repositories
             {
                 return await _context
                     .TodoItems
+                    .AsNoTracking()
                     .ToListAsync(cancellationToken);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error in TodoItemRepository. Can get list of todo items.");
+                _logger.LogError(ex, "Error in TodoItemRepository. Can't get list of todo items.");
                 throw;
             }
         }
 
-        public async Task Update(TodoItem entity, CancellationToken cancellationToken)
+        public async Task<TodoItem> Get(long id, CancellationToken cancellationToken)
         {
-            TodoItem todoItemFromContext = await _context.TodoItems.FindAsync(entity.Id);
-
-            if (todoItemFromContext == null)
-                throw new NotFoundException($"TodoItem with Id '{entity.Id}' could not be found");
-
             try
             {
-                todoItemFromContext.Content = entity.Content;
-                todoItemFromContext.Done = entity.Done;
-                await _context.SaveChangesAsync(cancellationToken);
+                return 
+                    await _context
+                    .TodoItems
+                    .FirstOrDefaultAsync(todoItem => todoItem.Id == id, cancellationToken);
             }
-            catch (Exception ex)
+            catch(Exception ex)
             {
-                _logger.LogError(ex, "Error in TodoItemRepository. Todo item could not be updated");
+                _logger.LogError(ex, "Error in TodoItemRepository. Can't get todo item");
                 throw;
             }
         }
+
+        public async Task SaveChangesAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                await _context.SaveChangesAsync(cancellationToken);
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError(ex, "Error in TodoItemRepository. Can't save changes");
+                throw;
+            }
+        }    
     }
 }

@@ -10,7 +10,7 @@ namespace TodoApp.Application.TodoItems.Commands
 {
     public class CreateTodoItemCommand : IRequest<long>
     {
-        public TodoItemDto TodoItemDto { get; set; }
+        public CreateTodoItemDto CreateTodoItemDto { get; set; }
     }
 
     public class CreateTodoItemCommandHandler : IRequestHandler<CreateTodoItemCommand, long>
@@ -26,7 +26,7 @@ namespace TodoApp.Application.TodoItems.Commands
 
         public async Task<long> Handle(CreateTodoItemCommand request, CancellationToken cancellationToken)
         {
-            var todoItem = _mapper.Map<TodoItem>(request.TodoItemDto);
+            var todoItem = _mapper.Map<TodoItem>(request.CreateTodoItemDto);
 
             return await _repository.Create(todoItem, cancellationToken);
         }

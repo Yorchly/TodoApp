@@ -11,7 +11,7 @@ namespace Application.UnitTests.Queries
     public class CreateTodoItemCommandTest : TodoItemCommandQueryCommonTest
     {
         private CreateTodoItemCommand query;
-        private TodoItemDto todoItemDto;
+        private CreateTodoItemDto createTodoItemDto;
         private CreateTodoItemCommandHandler handler;
         private const long todoItemCreatedId = 1;
 
@@ -20,13 +20,13 @@ namespace Application.UnitTests.Queries
         [SetUp]
         public void SetUp()
         {
-            todoItemDto = new TodoItemDto { Id = 0, Content = "Test", Done = true };
+            createTodoItemDto = new CreateTodoItemDto { Content = "Test", Done = true };
             handler = new CreateTodoItemCommandHandler(
                 MockRepository.Object, Mapper
             );
             query = new CreateTodoItemCommand
             {
-                TodoItemDto = todoItemDto
+                CreateTodoItemDto = createTodoItemDto
             };
         }
 
