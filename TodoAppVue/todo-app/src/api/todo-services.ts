@@ -14,7 +14,7 @@ export async function createTodo(todoItem: TodoItem): Promise<number> {
 }
 
 export async function updateTodo(todoItem: TodoItem): Promise<boolean> {
-  const response = await api.put("TodoItem", todoItem);
+  const response = await api.put(`TodoItem/${todoItem.id}`, todoItem);
 
   return response.status === 200;
 }
