@@ -13,7 +13,7 @@ namespace Application.UnitTests.Queries
         private CreateTodoItemCommand query;
         private CreateTodoItemDto createTodoItemDto;
         private CreateTodoItemCommandHandler handler;
-        private const long todoItemCreatedId = 1;
+        private TodoItem todoItem;
 
         public CreateTodoItemCommandTest() : base() { }
 
@@ -21,6 +21,7 @@ namespace Application.UnitTests.Queries
         public void SetUp()
         {
             createTodoItemDto = new CreateTodoItemDto { Content = "Test", Done = true };
+            todoItem = new TodoItem { Id = 1, Content = "Test", Done = true };
             handler = new CreateTodoItemCommandHandler(
                 MockRepository.Object, Mapper
             );
@@ -33,13 +34,19 @@ namespace Application.UnitTests.Queries
         [Test]
         public async Task Handle_SuccesfullyCreateOnRepository_ReturnsIdOfNewTodoItemCreated()
         {
-             MockRepository
+            MockRepository
                 .Setup(repository => repository.Create(It.IsAny<TodoItem>(), new CancellationToken()))
-                .ReturnsAsync(todoItemCreatedId);
+                .ReturnsAsync(todoItem);
 
-            long result = await handler.Handle(query, new CancellationToken());
+            TodoItemDto result = await handler.Handle(query, new CancellationToken());
 
-            Assert.That(result, Is.EqualTo(todoItemCreatedId));
+            Assert.That(result, Is.Not.Null);
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.Id, Is.EqualTo(1));
+                Assert.That(result.Content, Is.EqualTo("Test"));
+                Assert.That(result.Done, Is.True);
+            });
         }
     }
 }

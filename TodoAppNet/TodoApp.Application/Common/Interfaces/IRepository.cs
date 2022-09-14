@@ -8,8 +8,8 @@ namespace TodoApp.Application.Common.Interfaces
     {
         public Task<List<T>> Get(CancellationToken cancellationToken);
         public Task<T> Get(long id, CancellationToken cancellationToken);
-        public Task<long> Create(T entity, CancellationToken cancellationToken);
-        public Task Delete(long id, CancellationToken cancellationToken);
+        public Task<T> Create(T entity, CancellationToken cancellationToken);
+        public Task<T> Delete(long id, CancellationToken cancellationToken);
         public Task SaveChangesAsync(CancellationToken cancellationToken);
     }
 }

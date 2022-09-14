@@ -8,12 +8,12 @@ using TodoApp.Domain.Entities;
 
 namespace TodoApp.Application.TodoItems.Commands
 {
-    public class CreateTodoItemCommand : IRequest<long>
+    public class CreateTodoItemCommand : IRequest<TodoItemDto>
     {
         public CreateTodoItemDto CreateTodoItemDto { get; set; }
     }
 
-    public class CreateTodoItemCommandHandler : IRequestHandler<CreateTodoItemCommand, long>
+    public class CreateTodoItemCommandHandler : IRequestHandler<CreateTodoItemCommand, TodoItemDto>
     {
         private readonly IMapper _mapper;
         private readonly IRepository<TodoItem> _repository;
@@ -24,11 +24,13 @@ namespace TodoApp.Application.TodoItems.Commands
             _repository = repository;
         }
 
-        public async Task<long> Handle(CreateTodoItemCommand request, CancellationToken cancellationToken)
+        public async Task<TodoItemDto> Handle(CreateTodoItemCommand request, CancellationToken cancellationToken)
         {
             var todoItem = _mapper.Map<TodoItem>(request.CreateTodoItemDto);
 
-            return await _repository.Create(todoItem, cancellationToken);
+            todoItem = await _repository.Create(todoItem, cancellationToken);
+
+            return _mapper.Map<TodoItemDto>(todoItem);
         }
     }
 

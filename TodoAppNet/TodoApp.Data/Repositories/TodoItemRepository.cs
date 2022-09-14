@@ -21,14 +21,14 @@ namespace TodoApp.Data.Repositories
             _logger = logger;
         }
 
-        public async Task<long> Create(TodoItem entity, CancellationToken cancellationToken)
+        public async Task<TodoItem> Create(TodoItem entity, CancellationToken cancellationToken)
         {
             try
             {
                 await _context.TodoItems.AddAsync(entity, cancellationToken);
                 await _context.SaveChangesAsync(cancellationToken);
 
-                return entity.Id;
+                return entity;
             }
             catch (Exception ex)
             {
@@ -37,17 +37,19 @@ namespace TodoApp.Data.Repositories
             }
         }
 
-        public async Task Delete(long id, CancellationToken cancellationToken)
+        public async Task<TodoItem> Delete(long id, CancellationToken cancellationToken)
         {
             TodoItem todoItem = await Get(id, cancellationToken);
 
-            if (todoItem == null)
+            if (todoItem is null)
                 throw new NotFoundException($"TodoItem with Id '{id}' could not be found");
 
             try
             {
                 _context.TodoItems.Remove(todoItem);
                 await _context.SaveChangesAsync(cancellationToken);
+
+                return todoItem;
             }
             catch (Exception ex)
             {

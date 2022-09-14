@@ -19,14 +19,12 @@ namespace Presentation.UnitTests
     public class TodoItemControllerTests
     {
         private readonly Mock<IMediator> mediatorMock = new();
-        private IValidator<TodoItemDto> validator =
-            new TodoItemDtoValidator();
         private TodoItemController controller;
 
         [SetUp]
         public void Setup()
         {
-            controller = new TodoItemController(mediatorMock.Object, validator);
+            controller = new TodoItemController(mediatorMock.Object);
         }
 
         #region GET Tests
@@ -88,19 +86,33 @@ namespace Presentation.UnitTests
                 Content = "Test",
                 Done = true
             };
-            long createdTodoItemId = 1;
+            var todoItemDto = new TodoItemDto
+            {
+                Id = 1,
+                Content = createTodoItemDto.Content,
+                Done = createTodoItemDto.Done
+            };
             mediatorMock
                 .Setup(mediator => mediator.Send(It.IsAny<CreateTodoItemCommand>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(createdTodoItemId);
+                .ReturnsAsync(todoItemDto);
 
-            ActionResult<long> result = await controller.Post(createTodoItemDto);
+            ActionResult<TodoItemDto> result = await controller.Post(createTodoItemDto);
 
-            var okObjectResult = result.Result as OkObjectResult;
-            OkObjectResultAsserts(okObjectResult);
+            var createdResult = result.Result as CreatedResult;
 
-            var id = okObjectResult.Value as long?;
-            Assert.That(id, Is.Not.Null);
-            Assert.That(id, Is.EqualTo(createdTodoItemId));
+            Assert.That(createdResult, Is.Not.Null);
+            Assert.That(createdResult.StatusCode, Is.EqualTo(StatusCodes.Status201Created));
+
+            var createResultTodoItem = createdResult.Value as TodoItemDto;
+
+            Assert.That(createResultTodoItem, Is.Not.Null);
+            Assert.Multiple(() =>
+            {
+                Assert.That(createResultTodoItem.Id, Is.EqualTo(todoItemDto.Id));
+                Assert.That(createResultTodoItem.Content, Is.EqualTo(todoItemDto.Content));
+                Assert.That(createResultTodoItem.Done, Is.EqualTo(todoItemDto.Done));
+            }
+            );
         }
 
         [Test]
@@ -115,7 +127,7 @@ namespace Presentation.UnitTests
                 .Setup(mediator => mediator.Send(It.IsAny<CreateTodoItemCommand>(), It.IsAny<CancellationToken>()))
                 .Throws(() => new Exception());
 
-            ActionResult<long> result = await controller.Post(createTodoItemDto);
+            ActionResult<TodoItemDto> result = await controller.Post(createTodoItemDto);
 
             var objectResult = result.Result as ObjectResult;
             ObjectResultWithStatus500Asserts(objectResult);
@@ -141,10 +153,11 @@ namespace Presentation.UnitTests
                 .Setup(mediator => mediator.Send(It.IsAny<UpdateTodoItemCommand>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(Unit.Value);
 
-            ActionResult<Unit> result = await controller.Put(todoItemDto, 1);
-
-            var okResult = result.Result as OkResult;
-            OkResultAsserts(okResult);
+            IActionResult result = await controller.Put(todoItemDto, 1);
+            var noContentResult = result as NoContentResult;
+            
+            Assert.IsNotNull(noContentResult);
+            Assert.That(noContentResult.StatusCode, Is.EqualTo(StatusCodes.Status204NoContent));
         }
 
         [Test]
@@ -156,9 +169,9 @@ namespace Presentation.UnitTests
                 Done = true
             };
 
-            ActionResult<Unit> result = await controller.Put(todoItemDto, 0);
+            IActionResult result = await controller.Put(todoItemDto, 0);
 
-            var badRequestObjectResult = result.Result as BadRequestObjectResult;
+            var badRequestObjectResult = result as BadRequestObjectResult;
             BadRequestObjectResultAsserts(badRequestObjectResult);
         }
 
@@ -178,9 +191,9 @@ namespace Presentation.UnitTests
                 .Setup(mediator => mediator.Send(It.IsAny<UpdateTodoItemCommand>(), It.IsAny<CancellationToken>()))
                 .Throws(() => new NotFoundException());
 
-            ActionResult<Unit> result = await controller.Put(todoItemDto, 1);
+            IActionResult result = await controller.Put(todoItemDto, 1);
 
-            var notFoundObjectResult = result.Result as NotFoundObjectResult;
+            var notFoundObjectResult = result as NotFoundObjectResult;
             NotFoundObjectResultAsserts(notFoundObjectResult);
         }
 
@@ -200,9 +213,9 @@ namespace Presentation.UnitTests
                 .Setup(mediator => mediator.Send(It.IsAny<UpdateTodoItemCommand>(), It.IsAny<CancellationToken>()))
                 .Throws(() => new Exception());
 
-            ActionResult<Unit> result = await controller.Put(todoItemDto, 1);
+            IActionResult result = await controller.Put(todoItemDto, 1);
 
-            var objectResult = result.Result as ObjectResult;
+            var objectResult = result as ObjectResult;
             ObjectResultWithStatus500Asserts(objectResult);
         }
 
@@ -218,14 +231,20 @@ namespace Presentation.UnitTests
             {
                 Id = todoItemToDeleteId
             };
+            var todoItemDtoDeleted = new TodoItemDto
+            {
+                Id = todoItemToDeleteId,
+                Content = "Test",
+                Done = true
+            };
             mediatorMock
                 .Setup(mediator => mediator.Send(It.IsAny<DeleteTodoItemCommand>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(Unit.Value);
+                .ReturnsAsync(todoItemDtoDeleted);
 
-            ActionResult<Unit> result = await controller.Delete(todoItemToDeleteId);
+            ActionResult<TodoItemDto> result = await controller.Delete(todoItemToDeleteId);
 
-            var okResult = result.Result as OkResult;
-            OkResultAsserts(okResult);
+            var okResult = result.Result as OkObjectResult;
+            OkObjectResultAsserts(okResult);
         }
 
         [Test]
@@ -233,7 +252,7 @@ namespace Presentation.UnitTests
         {
             long todoItemToDeleteId = 0;
 
-            ActionResult<Unit> result = await controller.Delete(todoItemToDeleteId);
+            ActionResult<TodoItemDto> result = await controller.Delete(todoItemToDeleteId);
 
             var badRequestObjectResult = result.Result as BadRequestObjectResult;
             BadRequestObjectResultAsserts(badRequestObjectResult);
@@ -251,7 +270,7 @@ namespace Presentation.UnitTests
                 .Setup(mediator => mediator.Send(It.IsAny<DeleteTodoItemCommand>(), It.IsAny<CancellationToken>()))
                 .Throws(() => new NotFoundException());
 
-            ActionResult<Unit> result = await controller.Delete(todoItemToDeleteId);
+            ActionResult<TodoItemDto> result = await controller.Delete(todoItemToDeleteId);
 
             var notFoundObjectResult = result.Result as NotFoundObjectResult;
             NotFoundObjectResultAsserts(notFoundObjectResult);
@@ -269,7 +288,7 @@ namespace Presentation.UnitTests
                 .Setup(mediator => mediator.Send(It.IsAny<DeleteTodoItemCommand>(), It.IsAny<CancellationToken>()))
                 .Throws(() => new Exception());
 
-            ActionResult<Unit> result = await controller.Delete(todoItemToDeleteId);
+            ActionResult<TodoItemDto> result = await controller.Delete(todoItemToDeleteId);
 
             var objectResult = result.Result as ObjectResult;
             ObjectResultWithStatus500Asserts(objectResult);
@@ -278,12 +297,6 @@ namespace Presentation.UnitTests
         #endregion
 
         #region private methods
-
-        private void OkResultAsserts(OkResult okResult)
-        {
-            Assert.That(okResult, Is.Not.Null);
-            Assert.That(okResult.StatusCode, Is.EqualTo(StatusCodes.Status200OK));
-        }
 
         private void OkObjectResultAsserts(OkObjectResult okObjectResult)
         {

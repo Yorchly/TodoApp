@@ -15,12 +15,10 @@ namespace TodoApp.WebApi.Controllers
     public class TodoItemController : ControllerBase
     {
         private readonly IMediator _mediator;
-        private readonly IValidator<TodoItemDto> _todoItemDtoValidator;
 
-        public TodoItemController(IMediator mediator, IValidator<TodoItemDto> todoItemDtoValidator)
+        public TodoItemController(IMediator mediator)
         {
             _mediator = mediator;
-            _todoItemDtoValidator = todoItemDtoValidator;
         }
 
         [HttpGet]
@@ -40,17 +38,17 @@ namespace TodoApp.WebApi.Controllers
             
 
         [HttpPost]
-        public async Task<ActionResult<long>> Post([FromBody] CreateTodoItemDto todoItemDto)
+        public async Task<ActionResult<TodoItemDto>> Post([FromBody] CreateTodoItemDto createTodoItemDto)
         {
             try
             {
-                long result = await _mediator.Send(
+                TodoItemDto todoItemDto = await _mediator.Send(
                     new CreateTodoItemCommand
                     {
-                        CreateTodoItemDto = todoItemDto
+                        CreateTodoItemDto = createTodoItemDto
                     }
                 );
-                return Ok(result);
+                return Created($"TodoItems/{todoItemDto.Id}", todoItemDto);
             }
             catch(Exception)
             {
@@ -59,7 +57,7 @@ namespace TodoApp.WebApi.Controllers
         }
 
         [HttpPut("{id:long}")]
-        public async Task<ActionResult<Unit>> Put([FromBody] UpdateTodoItemDto todoItemDto, long id)
+        public async Task<IActionResult> Put([FromBody] UpdateTodoItemDto todoItemDto, long id)
         {
             if (id <= 0)
                 return BadRequest("TodoItemDto Id must have a value greater than 0.");
@@ -74,7 +72,7 @@ namespace TodoApp.WebApi.Controllers
                     }
                 );
 
-                return Ok();
+                return NoContent();
             }
             catch(NotFoundException notFoundException)
             {
@@ -87,16 +85,16 @@ namespace TodoApp.WebApi.Controllers
         }
 
         [HttpDelete("{id:long}")]
-        public async Task<ActionResult<Unit>> Delete(long id)
+        public async Task<ActionResult<TodoItemDto>> Delete(long id)
         {
             if (id <= 0)
                 return BadRequest("TodoItemDto Id must have a value greater than 0");
 
             try
             {
-                await _mediator.Send(new DeleteTodoItemCommand { Id = id });
+                TodoItemDto result = await _mediator.Send(new DeleteTodoItemCommand { Id = id });
 
-                return Ok();
+                return Ok(result);
             }
             catch (NotFoundException notFoundException)
             {
