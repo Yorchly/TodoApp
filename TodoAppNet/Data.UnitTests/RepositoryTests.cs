@@ -203,7 +203,7 @@ namespace Data.UnitTests
 
         #endregion
 
-        #region Get list
+        #region Get
 
         [Test]
         public async Task Get_ReturnsATodoItem()
